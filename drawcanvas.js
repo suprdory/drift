@@ -34,10 +34,33 @@ function toggleBG() {
         bgFillStyle = lightFillStyle
     }
 }
+function getRandomIntInclusive(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
+}
 
+class Point {
+    constructor(r,th) {
+        this.x=r*Math.cos(th)
+        this.y=r*Math.sin(th)
+    }
+}
 
 class Particle {
     constructor() {
+        let nPoints=getRandomIntInclusive(3,7)
+        var ths = [];
+        for (var i = 0; i < nPoints; i++) {
+            ths.push(Math.random()*2*Math.PI)
+        }
+        ths.sort()
+        let pointsArray=[]
+        for (let i = 0; i < nPoints; i++) {
+            pointsArray.push(new Point(Math.random()*20,ths[i]))
+        }
+        // console.log(pointsArray)
+        this.Points=pointsArray
         this.V=Math.random()*5+2
         this.theta=Math.random()*2*Math.PI
         this.x = cursor.x + randn_bm() * 100;
@@ -45,7 +68,6 @@ class Particle {
         this.u = this.V*Math.sin(this.theta);
         this.v = this.V*Math.cos(this.theta);
         this.size = 20;
-        this.alpha = alpha * Math.PI / 180;
         this.fillColor = 0;
         this.theta = Math.atan2(this.v,this.u);
     }
@@ -62,14 +84,14 @@ class Particle {
     }
 
     draw() {
-        let L=this.size
-        let a=this.alpha
-        let th=this.theta
+
         context.beginPath();
         context.fillStyle = this.fillColor;
-        context.moveTo(this.x, this.y);
-        context.lineTo(this.x - L*Math.sin(th-a), this.y - L*Math.cos(th-a));
-        context.lineTo(this.x - L*Math.sin(th+a), this.y - L*Math.cos(th+a));
+        context.moveTo(this.x + this.Points[0].x, this.y + this.Points[0].y);
+        context.lineTo(this.x + this.Points[1].x, this.y +this.Points[1].y);
+        context.lineTo(this.x + this.Points[2].x, this.y +this.Points[2].y);
+        // context.lineTo(this.x - L*Math.sin(th-a), this.y - L*Math.cos(th-a));
+        // context.lineTo(this.x - L*Math.sin(th+a), this.y - L*Math.cos(th+a));
         context.fill();
     }
 
