@@ -12,7 +12,7 @@ const dt = 0.7
 const dthmax = 0.2
 const edgeWidth = 0.2
 const darkFillStyle = "rgba(0,0,0,1.000)"
-const lightFillStyle = "rgba(255,255,255,0.050)"
+const lightFillStyle = "rgba(255,255,255,1.000)"
 const alpha = 10
 const overscan = 20
 
@@ -84,7 +84,6 @@ class Particle {
     }
 
     draw() {
-
         context.beginPath();
         context.fillStyle = this.fillColor;
         context.moveTo(this.x + this.Points[0].x, this.y + this.Points[0].y);
@@ -114,7 +113,7 @@ class Particle {
     }
 
     turnTowards(targetDir){
-        this.theta=this.theta-(this.theta-targetDir)*0.05
+        this.theta=this.theta-(this.theta-targetDir)*0.01
         this.updateVelocityComponents()
     }
    
