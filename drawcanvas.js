@@ -11,8 +11,8 @@ const nP = 1000
 const dt = 0.7
 const dthmax = 0.2
 const edgeWidth = 0.2
-const darkFillStyle = "rgba(0,0,0,1.000)"
-const lightFillStyle = "rgba(255,255,255,1.000)"
+const darkFillStyle = "rgba(0,0,0,1.05)"
+const lightFillStyle = "rgba(255,255,255,1.05)"
 const alpha = 10
 const overscan = 20
 
@@ -72,6 +72,8 @@ class Particle {
         this.theta = Math.atan2(this.v, this.u);
         this.atTheta = 0
         this.spTheta = Math.random()*40-20
+        this.atPhi = 0
+        this.spPhi = Math.random() * 40 - 20
     }
 
     updateVelocityComponents() {
@@ -84,16 +86,17 @@ class Particle {
         this.y = this.y + this.v * dt;
         this.theta = Math.atan2(this.u, this.v)
         this.atTheta = this.atTheta + this.spTheta / 180
+        this.atPhi = this.atPhi + this.spPhi / 180
     }
 
     rotate() {
         let rotPoints = []
-        let th = this.atTheta
-        let sinth = Math.sin(th)
-        let costh = Math.cos(th)
+        let sinth = Math.sin(this.atTheta)
+        let costh = Math.cos(this.atTheta)
+        let cosph = Math.cos(this.atPhi)
         this.Points.forEach((point) => {
-            let xr = point.x * costh - point.y * sinth
-            let yr = point.x * sinth + point.y * costh
+            let xr = point.x * costh * cosph - point.y * sinth
+            let yr = point.x * sinth * cosph + point.y * costh
             rotPoints.push({ x: xr, y: yr })
         })
         return (rotPoints)
