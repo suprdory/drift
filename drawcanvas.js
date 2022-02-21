@@ -41,54 +41,75 @@ function getRandomIntInclusive(min, max) {
 }
 
 class Point {
-    constructor(r,th) {
-        this.x=r*Math.cos(th)
-        this.y=r*Math.sin(th)
+    constructor(r, th) {
+        this.x = r * Math.cos(th)
+        this.y = r * Math.sin(th)
     }
 }
 
 class Particle {
     constructor() {
-        let nPoints=getRandomIntInclusive(3,7)
+        this.nPoints = getRandomIntInclusive(3, 6)
         var ths = [];
-        for (var i = 0; i < nPoints; i++) {
-            ths.push(Math.random()*2*Math.PI)
+        for (var i = 0; i < this.nPoints; i++) {
+            ths.push(Math.random() * 2 * Math.PI)
         }
         ths.sort()
-        let pointsArray=[]
-        for (let i = 0; i < nPoints; i++) {
-            pointsArray.push(new Point(Math.random()*20,ths[i]))
+        let pointsArray = []
+        for (let i = 0; i < this.nPoints; i++) {
+            pointsArray.push(new Point(Math.random() * 10, ths[i]))
         }
         // console.log(pointsArray)
-        this.Points=pointsArray
-        this.V=Math.random()*5+2
-        this.theta=Math.random()*2*Math.PI
+        this.Points = pointsArray
+        this.V = Math.random() * 5 + 2
+        this.theta = Math.random() * 2 * Math.PI
         this.x = cursor.x + randn_bm() * 100;
         this.y = cursor.y + randn_bm() * 100;
-        this.u = this.V*Math.sin(this.theta);
-        this.v = this.V*Math.cos(this.theta);
+        this.u = this.V * Math.sin(this.theta);
+        this.v = this.V * Math.cos(this.theta);
         this.size = 20;
         this.fillColor = 0;
-        this.theta = Math.atan2(this.v,this.u);
+        this.theta = Math.atan2(this.v, this.u);
+        this.atTheta = 0
+        this.spTheta = Math.random()*40-20
     }
 
-    updateVelocityComponents(){
+    updateVelocityComponents() {
         this.u = this.V * Math.sin(this.theta);
         this.v = this.V * Math.cos(this.theta);
     }
 
-    move()  {
+    move() {
         this.x = this.x + this.u * dt;
         this.y = this.y + this.v * dt;
-        this.theta = Math.atan2(this.u,this.v)
+        this.theta = Math.atan2(this.u, this.v)
+        this.atTheta = this.atTheta + this.spTheta / 180
+    }
+
+    rotate() {
+        let rotPoints = []
+        let th = this.atTheta
+        let sinth = Math.sin(th)
+        let costh = Math.cos(th)
+        this.Points.forEach((point) => {
+            let xr = point.x * costh - point.y * sinth
+            let yr = point.x * sinth + point.y * costh
+            rotPoints.push({ x: xr, y: yr })
+        })
+        return (rotPoints)
     }
 
     draw() {
+        let rotPoints=this.rotate()
         context.beginPath();
         context.fillStyle = this.fillColor;
-        context.moveTo(this.x + this.Points[0].x, this.y + this.Points[0].y);
-        context.lineTo(this.x + this.Points[1].x, this.y +this.Points[1].y);
-        context.lineTo(this.x + this.Points[2].x, this.y +this.Points[2].y);
+        context.moveTo(this.x + rotPoints[0].x, this.y + rotPoints[0].y);
+        for (let i = 1; i < this.nPoints; i++) {
+            context.lineTo(this.x + rotPoints[i].x, this.y + rotPoints[i].y);
+        }
+
+        // context.lineTo(this.x + this.Points[1].x, this.y +this.Points[1].y);
+        // context.lineTo(this.x + this.Points[2].x, this.y +this.Points[2].y);
         // context.lineTo(this.x - L*Math.sin(th-a), this.y - L*Math.cos(th-a));
         // context.lineTo(this.x - L*Math.sin(th+a), this.y - L*Math.cos(th+a));
         context.fill();
@@ -112,54 +133,53 @@ class Particle {
         }
     }
 
-    turnTowards(targetDir){
-        this.theta=this.theta-(this.theta-targetDir)*0.01
+    turnTowards(targetDir) {
+        this.theta = this.theta - (this.theta - targetDir) * 0.01
         this.updateVelocityComponents()
     }
-   
+
     detectEdgeRotate() {
         let x = this.x
         let y = this.y
         let x2 = this.u
         let y2 = this.v
-        let x1 = innerWidth/2-x
-        let y1 = innerHeight/2-y
+        let x1 = innerWidth / 2 - x
+        let y1 = innerHeight / 2 - y
 
-        if ( 
-            x > innerWidth * (1 - edgeWidth) ||  
-            x < innerWidth * edgeWidth || 
-            y > innerHeight * (1 - edgeWidth) || 
+        if (
+            x > innerWidth * (1 - edgeWidth) ||
+            x < innerWidth * edgeWidth ||
+            y > innerHeight * (1 - edgeWidth) ||
             y < innerHeight * edgeWidth
-            ) 
-        {
-            let Dth=Math.atan2(x1*y2-y1*x2,x1*x2+y1*y2)
-            let dth=0.01*Dth
+        ) {
+            let Dth = Math.atan2(x1 * y2 - y1 * x2, x1 * x2 + y1 * y2)
+            let dth = 0.01 * Dth
             if (Math.abs(dth) > dthmax) {
                 // console.log('exceed!')
-                dth=dthmax*Math.sign(dth)
+                dth = dthmax * Math.sign(dth)
             }
-            this.theta=this.theta+dth
-            this.u = this.V*Math.sin(this.theta);
-            this.v = this.V*Math.cos(this.theta);
+            this.theta = this.theta + dth
+            this.u = this.V * Math.sin(this.theta);
+            this.v = this.V * Math.cos(this.theta);
         }
-}
+    }
     trackCursor() {
         let x2 = this.u
         let y2 = this.v
-        let x1 = cursor.x-this.x
-        let y1 = cursor.y-this.y
-        let dth=Math.atan2(x1*y2-y1*x2,x1*x2+y1*y2)
-        this.theta=this.theta+dth*0.03
-        this.u = this.V*Math.sin(this.theta);
-        this.v = this.V*Math.cos(this.theta);
+        let x1 = cursor.x - this.x
+        let y1 = cursor.y - this.y
+        let dth = Math.atan2(x1 * y2 - y1 * x2, x1 * x2 + y1 * y2)
+        this.theta = this.theta + dth * 0.03
+        this.u = this.V * Math.sin(this.theta);
+        this.v = this.V * Math.cos(this.theta);
     }
     scatter() {
-        this.theta=Math.random()*2*Math.PI
-        this.u = this.V*Math.sin(this.theta);
-        this.v = this.V*Math.cos(this.theta);
+        this.theta = Math.random() * 2 * Math.PI
+        this.u = this.V * Math.sin(this.theta);
+        this.v = this.V * Math.cos(this.theta);
     }
     setColor(newColor) {
-        this.fillColor=newColor
+        this.fillColor = newColor
     }
 }
 
@@ -203,6 +223,7 @@ function anim() {
     context.fillRect(0, 0, canvas.width, canvas.height);
 
     particlesArray.forEach((particle) => particle.move())
+    particlesArray.forEach((particle) => particle.rotate())
     particlesArray.forEach((particle) => particle.draw())
     particlesArray.forEach((particle) => particle.periodicUD())
     particlesArray.forEach((particle) => particle.periodicLR())
@@ -215,7 +236,7 @@ function anim() {
             particlesArray.forEach((particle) => particle.trackCursor())
         }
     }
-    if (showGuide){
+    if (showGuide) {
         drawGuide()
     }
 }
@@ -228,27 +249,27 @@ addEventListener('mousedown', e => {
     noDouble = false;
     lastTouch = new Date().getTime();
 });
-  
+
 addEventListener('mousemove', e => {
     cursor.x = e.offsetX;
     cursor.y = e.offsetY;
     x = e.offsetX;
     y = e.offsetY;
 });
-  
+
 addEventListener('mouseup', e => {
     mouseDown = false;
 });
 
 addEventListener('dblclick', e => {
-   
-    if (e.offsetY < innerHeight / 4 & e.offsetX > 3*innerWidth/4) {
-       setColors()
-    } else if (e.offsetY < innerHeight / 4 & e.offsetX < 1 * innerWidth / 4){
+
+    if (e.offsetY < innerHeight / 4 & e.offsetX > 3 * innerWidth / 4) {
+        setColors()
+    } else if (e.offsetY < innerHeight / 4 & e.offsetX < 1 * innerWidth / 4) {
         toggleBG()
     }
-     else {
-        particlesArray.forEach((particle) => particle.scatter())    
+    else {
+        particlesArray.forEach((particle) => particle.scatter())
     }
 
 });
@@ -259,22 +280,22 @@ addEventListener(
         e.preventDefault();
         let now = new Date().getTime();
         let timeSince = now - lastTouch;
- 
-        if (timeSince < 300) { 
+
+        if (timeSince < 300) {
             //double touch
-            if (e.touches[0].clientX > innerWidth * 0.75 && e.touches[0].clientY < innerHeight * 0.25){   
+            if (e.touches[0].clientX > innerWidth * 0.75 && e.touches[0].clientY < innerHeight * 0.25) {
                 setColors()
             }
-            else if (e.touches[0].clientX < innerWidth * 0.25 && e.touches[0].clientY < innerHeight * 0.25){
+            else if (e.touches[0].clientX < innerWidth * 0.25 && e.touches[0].clientY < innerHeight * 0.25) {
                 toggleBG()
             }
-            
-            else{
-                particlesArray.forEach((particle) => particle.scatter()) 
+
+            else {
+                particlesArray.forEach((particle) => particle.scatter())
             }
-            
+
         }
-        showGuide=false
+        showGuide = false
         lastTouch = new Date().getTime()
         cursor.x = e.touches[0].clientX;
         cursor.y = e.touches[0].clientY;
