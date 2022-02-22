@@ -21,6 +21,7 @@ let mouseDown = false
 let lightBG = false
 let bgFillStyle = darkFillStyle
 let showGuide = false
+let doubleClick = false
 
 function toggleBG() {
     if (lightBG) {
@@ -174,10 +175,24 @@ class Particle {
         let d2 = (x1 ** 2 + y1 ** 2)
         let dth = Math.atan2(x1 * y2 - y1 * x2, x1 * x2 + y1 * y2)
         // this.theta = this.theta - dth * Math.max(Math.exp(-d2/50**2),0.0000005)
-        this.theta = this.theta - dth * 0.2*Math.exp(-d2 / 50 ** 2)
+        this.theta = this.theta + dth * 0.03
         this.u = this.V * Math.sin(this.theta);
         this.v = this.V * Math.cos(this.theta);
     }
+
+    blowCursor() {
+        let x2 = this.u
+        let y2 = this.v
+        let x1 = cursor.x - this.x
+        let y1 = cursor.y - this.y
+        let d2 = (x1 ** 2 + y1 ** 2)
+        let dth = Math.atan2(x1 * y2 - y1 * x2, x1 * x2 + y1 * y2)
+        // this.theta = this.theta - dth * Math.max(Math.exp(-d2/50**2),0.0000005)
+        this.theta = this.theta - dth * 0.3 * Math.exp(-d2 / 100 ** 2)
+        this.u = this.V * Math.sin(this.theta);
+        this.v = this.V * Math.cos(this.theta);
+    }
+
     scatter() {
         this.theta = Math.random() * 2 * Math.PI
         this.u = this.V * Math.sin(this.theta);
@@ -236,9 +251,11 @@ function anim() {
     // console.log(particlesArray[0].theta)
     // particlesArray.forEach((particle) => particle.detectEdgeRotate())
     if (mouseDown) {
-        let now = new Date().getTime();
-        if (now - lastTouch > 300) {
+        if (doubleClick) {
             particlesArray.forEach((particle) => particle.trackCursor())
+        }
+        else{
+            particlesArray.forEach((particle) => particle.blowCursor())
         }
     }
     if (showGuide) {
@@ -252,7 +269,15 @@ addEventListener('mousedown', e => {
     cursor.y = e.offsetY;
     mouseDown = true;
     noDouble = false;
-    lastTouch = new Date().getTime();
+    let now = new Date().getTime();
+    if (now - lastTouch < 300){
+        doubleClick=true
+    }
+    else {
+        doubleClick = false
+    }
+    lastTouch = now;
+
 });
 
 addEventListener('mousemove', e => {
@@ -274,7 +299,7 @@ addEventListener('dblclick', e => {
         toggleBG()
     }
     else {
-        particlesArray.forEach((particle) => particle.scatter())
+        // particlesArray.forEach((particle) => particle.scatter())
     }
 
 });
