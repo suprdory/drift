@@ -49,7 +49,7 @@ class Point {
 
 class Particle {
     constructor() {
-        this.nPoints = getRandomIntInclusive(3, 6)
+        this.nPoints = getRandomIntInclusive(3, 5)
         var ths = [];
         for (var i = 0; i < this.nPoints; i++) {
             ths.push(Math.random() * 2 * Math.PI)
@@ -171,8 +171,10 @@ class Particle {
         let y2 = this.v
         let x1 = cursor.x - this.x
         let y1 = cursor.y - this.y
+        let d2 = (x1 ** 2 + y1 ** 2)
         let dth = Math.atan2(x1 * y2 - y1 * x2, x1 * x2 + y1 * y2)
-        this.theta = this.theta + dth * 0.03
+        // this.theta = this.theta - dth * Math.max(Math.exp(-d2/50**2),0.0000005)
+        this.theta = this.theta - dth * 0.2*Math.exp(-d2 / 50 ** 2)
         this.u = this.V * Math.sin(this.theta);
         this.v = this.V * Math.cos(this.theta);
     }
