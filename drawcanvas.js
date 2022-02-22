@@ -58,8 +58,9 @@ class Particle {
         ths.sort()
         let pointsArray = []
         for (let i = 0; i < this.nPoints; i++) {
-            pointsArray.push(new Point(Math.random() * 10, ths[i]))
+            pointsArray.push(new Point(0+Math.random() * 10, ths[i]))
         }
+        pointsArray.push(pointsArray[0])
         // console.log(pointsArray)
         this.Points = pointsArray
         this.V = Math.random() * 5 + 2
