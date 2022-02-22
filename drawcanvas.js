@@ -325,6 +325,9 @@ addEventListener(
                 // particlesArray.forEach((particle) => particle.scatter())
             }
         }
+        else{
+            doubleClick=false
+        }
         showGuide = false
         lastTouch = new Date().getTime()
         cursor.x = e.touches[0].clientX;
